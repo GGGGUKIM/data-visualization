@@ -1,0 +1,85 @@
+---
+title: "Data_visualization_coursework"
+output: html_document
+date: "2022-09-15"
+---
+This coursework is about using the designated datasets to do relevant data visualization and animation. This Rmd file and the generated gif files are my own work. Please do not distribute them without my permission.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(include = FALSE)
+library(ggplot2)
+library(gganimate)
+library(gapminder)
+```
+
+Show the relationship between gdp per capital and the life expectancy
+```{r cars}
+# default plot
+p1 <- 
+  ggplot(
+  gapminder, 
+  aes(x = gdpPercap, y=lifeExp, size = pop, colour = country)
+  ) +
+  geom_point(show.legend = FALSE, alpha = 0.7) +
+  scale_color_viridis_d() +
+  scale_size(range = c(2, 12)) +
+  scale_x_log10() +
+  labs(x = "GDP per capita", y = "Life expectancy")
+# animate it
+p1 + transition_time(year) +
+  labs(title = "Year: {frame_time}")
+anim_save("life_expectancy1.gif")
+# show changes in different continents
+p1 + facet_wrap(~continent) +
+  transition_time(year) +
+  labs(title = "Year: {frame_time}")
+anim_save("life_expectancy2.gif")
+```
+
+Using airquality data to show the change of the temperature in a day.
+```{r}
+# default plot
+p2 <- 
+  ggplot(
+  airquality,
+  aes(Day, Temp, group = Month, color = factor(Month))
+  ) +
+  geom_line() +
+  scale_color_viridis_d() +
+  labs(x = "Day of Month", y = "Temperature") +
+  theme(legend.position = "top")
+p2
+# animate it
+p2 + transition_reveal(Day)
+anim_save("temperature1.gif")
+# show changes in different months
+p2 + 
+  transition_reveal(Day) +
+  facet_wrap(~Month)
+anim_save("temperature2.gif")
+```
+
+Using the same dataset to show the change of the average temperature in different months.
+```{r}
+# data preparation
+mean.temp <- airquality %>%
+  group_by(Month) %>%
+  summarise(Temp = mean(Temp))
+mean.temp
+# default plot
+p3 <- ggplot(mean.temp, aes(Month, Temp, fill = Temp)) +
+  geom_col() +
+  scale_fill_distiller(palette = "Reds", direction = 1) +
+  theme_minimal() +
+  theme(
+    panel.grid = element_blank(),
+    panel.grid.major.y = element_line(color = "white"),
+    panel.ontop = TRUE
+  )
+p3
+# animate the bar plot
+p3 + transition_states(Month, wrap = FALSE) +
+  shadow_mark()
+anim_save("temperature3.gif")
+```
+
